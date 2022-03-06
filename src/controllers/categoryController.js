@@ -12,7 +12,6 @@ export async function getCategory(req, res) {
 
 export async function createCategory(req, res) {
   const { name } = req.body;
-  console.log(name);
 
   if (!name) {
     return res.sendStatus(400);
@@ -21,14 +20,13 @@ export async function createCategory(req, res) {
   try {
     const categoryExist = await connection.query(
       "SELECT * FROM categories WHERE name = $1",
-      name
+      [name]
     );
-    console.log(categoryExist.rows[0]);
-    if (categoryExist.rows[0]) {
+    if (categoryExist.rows.length !== 0) {
       return res.sendStatus(409);
     }
 
-    await connection.query("INSERT INTO categories (name) VALUES ($1)", name);
+    await connection.query("INSERT INTO categories (name) VALUES ($1)", [name]);
     res.sendStatus(201);
   } catch (err) {
     res.status(500).send(err);
