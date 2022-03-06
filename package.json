@@ -5,6 +5,7 @@
   "description": "project with database sql",
   "main": "index.js",
   "dependencies": {
+    "@joi/date": "^2.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",

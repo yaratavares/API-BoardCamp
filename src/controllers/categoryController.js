@@ -13,16 +13,14 @@ export async function getCategory(req, res) {
 export async function createCategory(req, res) {
   const { name } = req.body;
 
-  if (!name) {
-    return res.sendStatus(400);
-  }
-
   try {
-    const categoryExist = await connection.query(
+    const resultcategory = await connection.query(
       "SELECT * FROM categories WHERE name = $1",
       [name]
     );
-    if (categoryExist.rows.length !== 0) {
+    const categoryExist = resultcategory.rows.length;
+
+    if (!categoryExist) {
       return res.sendStatus(409);
     }
 

@@ -25,10 +25,6 @@ export async function getGames(req, res) {
 export async function createGame(req, res) {
   const { name, image, stockTotal, categoryId, pricePerDay } = req.body;
 
-  if (!name) {
-    return res.sendStatus(400);
-  }
-
   try {
     const resultCategory = await connection.query(
       "SELECT * FROM categories WHERE id = $1",
