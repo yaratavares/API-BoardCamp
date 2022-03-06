@@ -6,12 +6,14 @@ export async function getGames(req, res) {
 
   let searchName = "";
   if (name) {
-    searchName = SqlString.format(`WHERE name LIKE ?`, name + "%");
+    searchName = SqlString.format(`WHERE games.name ILIKE ?`, name + "%");
   }
 
   try {
     const resultGames = await connection.query(
-      `SELECT * FROM games ${searchName}`
+      `SELECT games.*, categories.name AS "categoryName" FROM games 
+            JOIN categories ON categories.id = games."categoryId"
+            ${searchName}`
     );
     const games = resultGames.rows;
     res.status(200).send(games);
