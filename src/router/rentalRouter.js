@@ -1,10 +1,9 @@
 import { Router } from "express";
+import { createRental, getRentals } from "../controllers/rentalControllerCR.js";
 import {
-  createRental,
   deleteRental,
   finishRental,
-  getRentals,
-} from "../controllers/rentalController.js";
+} from "../controllers/rentalControllerUD.js";
 import validateSchemaMiddleware from "../middlewares/validateSchemaMiddleware.js";
 import rentalSchema from "../schemas/rentalSchema.js";
 
