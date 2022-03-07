@@ -2,7 +2,7 @@ import sqlstring from "sqlstring";
 import connection from "../db.js";
 
 export async function getClients(req, res) {
-  const { cpf, offset, limit } = req.query;
+  const { cpf, offset, limit, order, desc } = req.query;
 
   let searchClients = "";
   if (cpf) {
@@ -19,12 +19,30 @@ export async function getClients(req, res) {
     setLimit = sqlstring.format(`LIMIT ?`, [limit]);
   }
 
+  const orderByFilter = {
+    id: 1,
+    name: 2,
+    phone: 3,
+    cpf: 4,
+    birthday: 5,
+  };
+
+  let setOrder = "";
+  if (orderByFilter[order] && !desc) {
+    setOrder = sqlstring.format(`ORDER BY ${orderByFilter[order]}`);
+  }
+
+  if (orderByFilter[order] && desc) {
+    setOrder = sqlstring.format(`ORDER BY ${orderByFilter[order]} DESC`);
+  }
+
   try {
     const resultClients = await connection.query(
       `SELECT * FROM customers 
         ${searchClients}
         ${setOffset}
         ${setLimit}
+        ${setOrder}
         `
     );
     const clients = resultClients.rows;

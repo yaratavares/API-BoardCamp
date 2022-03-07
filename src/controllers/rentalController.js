@@ -35,6 +35,26 @@ export async function getRentals(req, res) {
     setLimit = sqlstring.format(`LIMIT ?`, [limit]);
   }
 
+  const orderByFilter = {
+    id: 1,
+    customerId: 2,
+    gameId: 3,
+    rentDate: 4,
+    daysRented: 5,
+    returnDate: 6,
+    originalPrice: 7,
+    delayFee: 8,
+  };
+
+  let setOrder = "";
+  if (orderByFilter[order] && !desc) {
+    setOrder = sqlstring.format(`ORDER BY ${orderByFilter[order]}`);
+  }
+
+  if (orderByFilter[order] && desc) {
+    setOrder = sqlstring.format(`ORDER BY ${orderByFilter[order]} DESC`);
+  }
+
   try {
     const resultRentals = await connection.query({
       text: `SELECT rentals.*, customers.id AS "idCustomer", 
@@ -45,10 +65,9 @@ export async function getRentals(req, res) {
               JOIN customers ON rentals."customerId" = customers.id
               JOIN games ON rentals."gameId" = games.id
               JOIN categories ON games."categoryId" = categories.id
-            ${searchClients}
-            ${searchGame}
-            ${setOffset}
-            ${setLimit}`,
+            ${searchClients} ${searchGame} 
+            ${setOffset} ${setLimit} 
+            ${setOrder}`,
       rowMode: "array",
     });
 

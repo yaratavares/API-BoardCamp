@@ -2,7 +2,7 @@ import sqlstring from "sqlstring";
 import connection from "../db.js";
 
 export async function getCategory(req, res) {
-  const { offset, limit } = req.query;
+  const { offset, limit, order, desc } = req.query;
 
   let setOffset = "";
   if (offset) {
@@ -14,11 +14,26 @@ export async function getCategory(req, res) {
     setLimit = sqlstring.format(`LIMIT ?`, [limit]);
   }
 
+  const orderByFilter = {
+    id: 1,
+    name: 2,
+  };
+
+  let setOrder = "";
+  if (orderByFilter[order] && !desc) {
+    setOrder = sqlstring.format(`ORDER BY ${orderByFilter[order]}`);
+  }
+
+  if (orderByFilter[order] && desc) {
+    setOrder = sqlstring.format(`ORDER BY ${orderByFilter[order]} DESC`);
+  }
+
   try {
     const resultCategories = await connection.query(`
       SELECT * FROM categories
       ${setOffset}
       ${setLimit}
+      ${setOrder}
     `);
     const categories = resultCategories.rows;
     res.status(200).send(categories);
