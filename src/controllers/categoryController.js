@@ -20,7 +20,7 @@ export async function createCategory(req, res) {
     );
     const categoryExist = resultcategory.rows.length;
 
-    if (!categoryExist) {
+    if (categoryExist) {
       return res.sendStatus(409);
     }
 

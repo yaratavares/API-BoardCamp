@@ -1,3 +1,4 @@
+import sqlstring from "sqlstring";
 import connection from "../db.js";
 
 export async function getClients(req, res) {
@@ -5,7 +6,7 @@ export async function getClients(req, res) {
 
   let searchClients = "";
   if (cpf) {
-    searchClients = SqlString.format(`WHERE cpf LIKE ?`, cpf + "%");
+    searchClients = sqlstring.format(`WHERE cpf LIKE ?`, cpf + "%");
   }
 
   try {
@@ -88,12 +89,24 @@ export async function updateClient(req, res) {
       return res.sendStatus(404);
     }
 
+    const resultClientCpf = await connection.query(
+      "SELECT * FROM customers WHERE cpf = $1 AND id NOT IN ($2)",
+      [cpf, id]
+    );
+    const clientCpfExist = resultClientCpf.rows.length;
+
+    if (clientCpfExist) {
+      return res.sendStatus(409);
+    }
+
     await connection.query(
-      `UPDATE customers (name, phone, cpf, birthday) 
-        SET ($1, $2, $3, $4) WHERE id = $5`,
+      `UPDATE customers
+        SET name = $1, phone = $2, cpf = $3, birthday = $4
+        WHERE id = $5`,
       [name, phone, cpf, birthday, id]
     );
     res.sendStatus(200);
-  } catch (err) {}
-  res.sendStatus(200);
+  } catch (err) {
+    res.status(500).send(err);
+  }
 }
