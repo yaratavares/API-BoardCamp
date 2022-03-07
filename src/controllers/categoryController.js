@@ -1,8 +1,25 @@
+import sqlstring from "sqlstring";
 import connection from "../db.js";
 
 export async function getCategory(req, res) {
+  const { offset, limit } = req.query;
+
+  let setOffset = "";
+  if (offset) {
+    setOffset = sqlstring.format(`OFFSET ?`, [offset]);
+  }
+
+  let setLimit = "";
+  if (limit) {
+    setLimit = sqlstring.format(`LIMIT ?`, [limit]);
+  }
+
   try {
-    const resultCategories = await connection.query("SELECT * FROM categories");
+    const resultCategories = await connection.query(`
+      SELECT * FROM categories
+      ${setOffset}
+      ${setLimit}
+    `);
     const categories = resultCategories.rows;
     res.status(200).send(categories);
   } catch (err) {

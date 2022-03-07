@@ -3,7 +3,7 @@ import sqlstring from "sqlstring";
 import connection from "../db.js";
 
 export async function getRentals(req, res) {
-  const { customerId, gameId } = req.query;
+  const { customerId, gameId, offset, limit } = req.query;
 
   let searchClients = "";
   if (customerId && !gameId) {
@@ -25,6 +25,16 @@ export async function getRentals(req, res) {
     );
   }
 
+  let setOffset = "";
+  if (offset) {
+    setOffset = sqlstring.format(`OFFSET ?`, [offset]);
+  }
+
+  let setLimit = "";
+  if (limit) {
+    setLimit = sqlstring.format(`LIMIT ?`, [limit]);
+  }
+
   try {
     const resultRentals = await connection.query({
       text: `SELECT rentals.*, customers.id AS "idCustomer", 
@@ -37,7 +47,8 @@ export async function getRentals(req, res) {
               JOIN categories ON games."categoryId" = categories.id
             ${searchClients}
             ${searchGame}
-            `,
+            ${setOffset}
+            ${setLimit}`,
       rowMode: "array",
     });
 
@@ -107,7 +118,7 @@ export async function createRental(req, res) {
     }
 
     const { pricePerDay, stockTotal } = resultGame.rows[0];
-    const originalPrice = pricePerDay * daysRented * 100;
+    const originalPrice = pricePerDay * daysRented;
 
     const resultRentalsGame = await connection.query(
       `

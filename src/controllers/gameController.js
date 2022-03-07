@@ -1,19 +1,31 @@
-import SqlString from "sqlstring";
+import sqlstring from "sqlstring";
 import connection from "../db.js";
 
 export async function getGames(req, res) {
-  const { name } = req.query;
+  const { name, offset, limit } = req.query;
 
   let searchName = "";
   if (name) {
-    searchName = SqlString.format(`WHERE games.name ILIKE ?`, name + "%");
+    searchName = sqlstring.format(`WHERE games.name ILIKE ?`, name + "%");
+  }
+
+  let setOffset = "";
+  if (offset) {
+    setOffset = sqlstring.format(`OFFSET ?`, [offset]);
+  }
+
+  let setLimit = "";
+  if (limit) {
+    setLimit = sqlstring.format(`LIMIT ?`, [limit]);
   }
 
   try {
     const resultGames = await connection.query(
       `SELECT games.*, categories.name AS "categoryName" FROM games 
-            JOIN categories ON categories.id = games."categoryId"
-            ${searchName}`
+        JOIN categories ON categories.id = games."categoryId"
+        ${searchName}
+        ${setOffset}
+        ${setLimit}`
     );
     const games = resultGames.rows;
     res.status(200).send(games);
@@ -40,7 +52,13 @@ export async function createGame(req, res) {
       `INSERT INTO games 
         (name, image, "stockTotal", "categoryId", "pricePerDay") 
             VALUES ($1, $2, $3, $4, $5)`,
-      [name, image, parseInt(stockTotal), categoryId, parseInt(pricePerDay)]
+      [
+        name,
+        image,
+        parseInt(stockTotal),
+        categoryId,
+        parseInt(pricePerDay) * 100,
+      ]
     );
     res.sendStatus(201);
   } catch (err) {

@@ -2,17 +2,30 @@ import sqlstring from "sqlstring";
 import connection from "../db.js";
 
 export async function getClients(req, res) {
-  const { cpf } = req.query;
+  const { cpf, offset, limit } = req.query;
 
   let searchClients = "";
   if (cpf) {
     searchClients = sqlstring.format(`WHERE cpf LIKE ?`, cpf + "%");
   }
 
+  let setOffset = "";
+  if (offset) {
+    setOffset = sqlstring.format(`OFFSET ?`, [offset]);
+  }
+
+  let setLimit = "";
+  if (limit) {
+    setLimit = sqlstring.format(`LIMIT ?`, [limit]);
+  }
+
   try {
     const resultClients = await connection.query(
       `SELECT * FROM customers 
-        ${searchClients}`
+        ${searchClients}
+        ${setOffset}
+        ${setLimit}
+        `
     );
     const clients = resultClients.rows;
     res.status(200).send(clients);
